@@ -1,0 +1,11 @@
+version: '2'
+services:
+  opa:
+    image: openpolicyagent/opa:0.49.0-envoy
+    command: ["run", "-s", "-b", "/config/bundle.tar.gz"]
+    ports:
+      - "8181:8181"
+    volumes:
+      - D:\development\opaPlayground\s3OpaBundle\local-docker-compose\config:/config
+volumes:
+  config:

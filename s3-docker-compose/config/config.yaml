@@ -1,0 +1,11 @@
+services:
+  s3:
+    url: https://sidsopabucket.s3.amazonaws.com/
+    
+    credentials:
+      s3_signing:
+        environment_credentials: {}
+bundles:
+  authz:
+    service: s3
+    resource: bundle.tar.gz
