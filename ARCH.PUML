@@ -1,0 +1,83 @@
+@startuml
+'---------------------------------------------------
+' Skinning
+'---------------------------------------------------
+skinparam defaultFontName Arial
+skinparam rectangle {
+  BorderColor black
+  BackgroundColor #D3E4FF
+  RoundCorner 5
+}
+skinparam database {
+  BorderColor black
+  BackgroundColor #FFEBCC
+  RoundCorner 5
+}
+
+'---------------------------------------------------
+' Actors / External Systems
+'---------------------------------------------------
+actor "Product A User" as userA
+actor "Product B User" as userB
+actor "External Business-Unit App" as extApp
+
+'---------------------------------------------------
+' Container Boundary: Product Domain
+'---------------------------------------------------
+cloud "Product Domain" {
+ 
+  '-------------- Product A Containers --------------
+  rectangle "Product A UI\n(React / Angular Web App)" as webA
+  rectangle "Custom Auth / SSO (A)\n(OAuth2 / SAML Service)" as authA
+  rectangle "Product A API\n(Spring Boot Service)" as apiA
+  database "DB for A\n(PostgreSQL)" as dbA
+ 
+  '-------------- Product B Containers --------------
+  rectangle "Product B UI\n(React / Angular Web App)" as webB
+  rectangle "Custom Auth / SSO (B)\n(OAuth2 / SAML Service)" as authB
+  rectangle "Product B API\n(Spring Boot Service)" as apiB
+  database "DB for B\n(PostgreSQL)" as dbB
+ 
+  '--------- Shared (Chassis) Microservices ---------
+  rectangle "Microservice C\n(Java Microservice)" as msC
+  rectangle "Microservice D\n(Java Microservice)" as msD
+  rectangle "Microservice E\n(Java Microservice)" as msE
+ 
+  '------------- Common Data Tier -------------
+  database "Common Data Store\n(PostgreSQL)" as commonData
+ 
+  '--------- Enterprise API Gateway (External) ---------
+  rectangle "Enterprise API Gateway\n(Kong / AWS APIGW)" as apiGateway
+}
+
+'---------------------------------------------------
+' Relationships: End Users → UI → Auth → API → DB / Microservices
+'---------------------------------------------------
+userA --> webA : "Uses\nHTTPS/JSON"
+webA --> authA : "Delegates login"
+authA --> apiA : "Sends token"
+webA --> apiA : "Calls\nHTTPS/JSON"
+
+userB --> webB : "Uses\nHTTPS/JSON"
+webB --> authB : "Delegates login"
+authB --> apiB : "Sends token"
+webB --> apiB : "Calls\nHTTPS/JSON"
+
+apiA --> dbA : "Reads/Writes\nJDBC"
+apiB --> dbB : "Reads/Writes\nJDBC"
+
+apiA --> msC : "Invokes\ngRPC/REST"
+apiA --> msD : "Invokes\ngRPC/REST"
+apiB --> msC : "Invokes\ngRPC/REST"
+apiB --> msE : "Invokes\ngRPC/REST"
+
+msC --> commonData : "Reads/Writes\nJDBC"
+msD --> commonData : "Reads/Writes\nJDBC"
+msE --> commonData : "Reads/Writes\nJDBC"
+
+extApp --> apiGateway : "Uses\nHTTPS/JSON"
+apiGateway --> msC : "Routes requests"
+apiGateway --> msD : "Routes requests"
+apiGateway --> msE : "Routes requests"
+
+@enduml
